@@ -1,0 +1,6 @@
+{
+	"name": "Dock Everything",
+	"description": "This extension allows any program to be docked if it would normally be closed.",
+	"uuid": "dockeverything@daase.net",
+	"shell-version": ["3.32.2"]
+}
