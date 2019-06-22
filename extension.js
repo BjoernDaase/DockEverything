@@ -1,7 +1,7 @@
-
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
+const Shell = imports.gi.Shell;
 
 let text, button;
 
@@ -12,7 +12,7 @@ function _hideHello() {
 
 function _showHello() {
     if (!text) {
-        text = new St.Label({ style_class: 'helloworld-label', text: "Hello, world!" });
+        text = new St.Label({style_class: 'helloworld-label', text: "Let me try to focus spotify..."});
         Main.uiGroup.add_actor(text);
     }
 
@@ -21,13 +21,35 @@ function _showHello() {
     let monitor = Main.layoutManager.primaryMonitor;
 
     text.set_position(monitor.x + Math.floor(monitor.width / 2 - text.width / 2),
-                      monitor.y + Math.floor(monitor.height / 2 - text.height / 2));
+        monitor.y + Math.floor(monitor.height / 2 - text.height / 2));
 
     Tweener.addTween(text,
-                     { opacity: 0,
-                       time: 2,
-                       transition: 'easeOutQuad',
-                       onComplete: _hideHello });
+        {
+            opacity: 0,
+            time: 2,
+            transition: 'easeOutQuad',
+            onComplete: _hideHello
+        });
+
+
+    let apps = Shell.AppSystem.get_default().get_running();
+
+    for (let i = 0; i < apps.length; i++) {
+        let app = apps[i];
+        let windows = app.get_windows();
+
+        for (let j = 0; j < windows.length; j++) {
+            let window = windows[j];
+
+
+            if (app.get_name() === 'Spotify') {
+                Main.activateWindow(window);
+                let title = app.get_name() + ' - ' + window.get_title();
+                log(title);
+            }
+        }
+
+    }
 }
 
 function init() {
