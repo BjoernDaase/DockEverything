@@ -2,12 +2,22 @@ const St = imports.gi.St;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Shell = imports.gi.Shell;
+const WindowManager = imports.ui.windowManager;
 
 let text, button;
+let myGlobalWindow;
+let _completedDestroy = null;
+let connectHandle = null;
+
 
 function _hideHello() {
     Main.uiGroup.remove_actor(text);
     text = null;
+}
+
+function keepOpen() {
+    log("Keeping this open!!!");
+    return true;
 }
 
 function _showHello() {
@@ -44,12 +54,27 @@ function _showHello() {
 
             if (app.get_name() === 'Spotify') {
                 Main.activateWindow(window);
+
                 let title = app.get_name() + ' - ' + window.get_title();
                 log(title);
+                if(connectHandle) {
+                    window.disconnect(connectHandle);
+                }
+                connectHandle = window.connect('delete-event', keepOpen);
             }
         }
 
     }
+
+    if(myGlobalWindow) {
+        Main.activateWindow(myGlobalWindow, undefined, 0);
+    }
+
+    /* log("WindowManager:", WindowManager.WindowManager);
+    log("WindowManager.prototype:", WindowManager.WindowManager.prototype);
+    log("WindowManager.prototype._minimizeWindow:", WindowManager.WindowManager.prototype._minimizeWindow);*/
+
+    //log(Object.keys(global.window_manager));
 }
 
 function init() {
@@ -64,12 +89,34 @@ function init() {
 
     button.set_child(icon);
     button.connect('button-press-event', _showHello);
+
+    global.window_manager.connect('destroy', myDestroy);
 }
 
 function enable() {
     Main.panel._rightBox.insert_child_at_index(button, 0);
+
+    /*if(!_completedDestroy){
+        _completedDestroy = global.window_manager.completed_destroy.bind(global.window_manager);
+        global.window_manager.completed_destroy = function(actor){
+            log("So beatiful");
+            //_completedDestroy(actor);
+            myGlobalWindow = actor.meta_window;
+        }
+    }*/
 }
 
 function disable() {
     Main.panel._rightBox.remove_child(button);
 }
+
+function myDestroy(shellwm, actor) {
+    log('Destroying window.');
+    log(actor.meta_window.get_gtk_window_object_path());
+    //myGlobalWindow = actor.meta_window;
+    //log(myGlobalWindow.get_workspace().index());
+}
+
+/*WindowManager.WindowManager.prototype._minimizeWindow = function (shellwm, actor) {
+    log('GOT HERE.');
+};*/
